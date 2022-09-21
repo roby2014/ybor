@@ -4,7 +4,7 @@ import java.io.File
  * Main functions to make the interpreter run code or debug/display errors.
  */
 object Ybor {
-    private var mError: Boolean = false
+    private var err: Boolean = false
 
     /** Executes [source] */
     fun exec(source: String) {
@@ -39,12 +39,23 @@ object Ybor {
     /** Reports error with its [line] and error [msg]. */
     private fun reportError(line: Int, where: String, msg: String) {
         println("[line $line] ERROR $where : $msg")
-        mError = true
+        err = true
     }
 }
 
+fun testAstPrinter() {
+    val expression = Expression.Binary(
+        Expression.Unary(
+            Token(TokenType.MINUS, "-", null, 1), Expression.Literal(123)
+        ), Token(TokenType.STAR, "*", null, 1), Expression.Grouping(Expression.Literal(45.56))
+    )
+    println(AstPrinter().print(expression))
+}
+
 fun main(args: Array<String>) {
-    // ybor [file (optional)]
+    //testAstPrinter()
+
+// ybor [file (optional)]
     Ybor.exec("a")
     when {
         args.size > 1 || args.isEmpty() -> println("Usage: ybor [file]")
