@@ -1,7 +1,10 @@
-class AstPrinter : Expression.Visitor<String> {
-    fun print(expr: Expression): String {
-        return expr.accept(this)
-    }
+/**
+ * AST class.
+ * Used to debug our AST.
+ */
+object AstPrinter : Expression.Visitor<String> {
+    /** Prints the AST as debug message. */
+    fun debug(expr: Expression) = println(expr.accept(this))
 
     override fun visitBinaryExpr(expr: Expression.Binary): String {
         return parenthesize(expr.operator.lexeme, expr.left, expr.right)

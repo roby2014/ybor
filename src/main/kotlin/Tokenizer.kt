@@ -3,13 +3,20 @@
  * Implements function to transform our [source] into tokens.
  */
 class Tokenizer(private val source: String) {
+    /** token list */
     var tokens = mutableListOf<Token>()
+
+    /** current line count */
     var line = 1
 
+    /** index of token's lexeme start */
     private var start = 0
+
+    /** index of current character */
     private var current = 0
 
-    var keywords = hashMapOf<String, TokenType>(
+    /** reserved keywords */
+    private var keywords = hashMapOf<String, TokenType>(
         "if" to TokenType.IF,
         "else" to TokenType.ELSE,
         "elif" to TokenType.ELIF,
@@ -26,9 +33,7 @@ class Tokenizer(private val source: String) {
         "this" to TokenType.THIS,
     )
 
-    /**
-     * Reads source input and scan for tokens
-     */
+    /** Reads source input and scan for tokens. */
     fun scanTokens(): List<Token> {
         while (!endOfFile()) {
             start = current
@@ -46,7 +51,7 @@ class Tokenizer(private val source: String) {
     private fun scanToken() {
         val c = advance()
 
-        // simple cases
+        // "simple" cases
         val tokenToAdd = when (c) {
             '(' -> TokenType.LEFT_PAREN
             ')' -> TokenType.RIGHT_PAREN
@@ -79,7 +84,7 @@ class Tokenizer(private val source: String) {
             return
         }
 
-        // "complex" cases
+        // "complex/different" cases
         when (c) {
             '\n' -> line++
             '"' -> getStringToken()
@@ -95,16 +100,13 @@ class Tokenizer(private val source: String) {
         }
     }
 
-    /**
-     * Adds a new token with type [type] to the token list.
-     * In some specific cases, we need to get the literal value in various ways.
-     */
+    /** Adds a new token with type [type] to the token list. */
     private fun addToken(type: TokenType, literal: Any? = null) {
         val text = source.substring(start, current)
         tokens.add(Token(type, text, literal, line))
     }
 
-    /** Adds [TokenType.STRING] if a string was found */
+    /** Adds [TokenType.STRING] if a string was found. */
     private fun getStringToken() {
         while (peek() != '"' && !endOfFile()) {
             if (peek() == '\n') line++
@@ -149,10 +151,7 @@ class Tokenizer(private val source: String) {
     /** Returns true if we are at end of file. */
     private fun endOfFile() = current >= source.length
 
-    /**
-     * Returns true if next character is equal to [expected], advancing one,
-     * otherwise it returns false.
-     */
+    /** Returns true if next character is equal to [expected], advancing one. */
     private fun match(expected: Char): Boolean {
         if (endOfFile() || source[current] != expected) return false
         ++current

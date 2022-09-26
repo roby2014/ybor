@@ -9,10 +9,13 @@ object Ybor {
     /** Executes [source] */
     fun exec(source: String) {
         val tokens: List<Token> = Tokenizer(source).scanTokens()
+        val expr = Parser(tokens).parse()
 
         println("DEBUG:")
-        for (token in tokens) {
-            println(token)
+        if (expr != null) {
+            AstPrinter.debug(expr)
+        } else {
+            println("Could not parse source input.")
         }
     }
 
@@ -43,20 +46,12 @@ object Ybor {
     }
 }
 
-fun testAstPrinter() {
-    val expression = Expression.Binary(
-        Expression.Unary(
-            Token(TokenType.MINUS, "-", null, 1), Expression.Literal(123)
-        ), Token(TokenType.STAR, "*", null, 1), Expression.Grouping(Expression.Literal(45.56))
-    )
-    println(AstPrinter().print(expression))
-}
-
 fun main(args: Array<String>) {
     //testAstPrinter()
 
 // ybor [file (optional)]
-    Ybor.exec("a")
+    Ybor.exec("1 * 2")
+    return
     when {
         args.size > 1 || args.isEmpty() -> println("Usage: ybor [file]")
         args.size == 1 -> Ybor.execFile(args[0])
