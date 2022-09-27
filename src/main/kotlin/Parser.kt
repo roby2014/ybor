@@ -3,10 +3,10 @@
  * @param tokens Token list to parse.
  */
 class Parser(private val tokens: List<Token>) {
+    private class ParserError : Exception()
+
     /** current token index */
     private var current = 0
-
-    private class ParserError : Exception()
 
     /** Parses tokens, returning the AST if success, null otherwise. */
     fun parse() = try {
@@ -16,6 +16,23 @@ class Parser(private val tokens: List<Token>) {
         null
     }
 
+    /**
+     * Helper method to parse left associative binary expressions, such as:
+     * Equality, comparison, term, factor, ...
+     * This reduces redundant code.
+     * @param tokenTypes Token types to match
+     * @param method Higher precedence parse method
+     */
+    private fun parseLeftAssociative(tokenTypes: List<TokenType>, method: () -> Expression): Expression {
+        var expr = method()
+        while (match(tokenTypes)) {
+            val operator = previous()
+            val right = method()
+            expr = Expression.Binary(expr, operator, right)
+        }
+        return expr
+    }
+
     /** This is where the top-down parser starts.
      * "Recursive descent is considered a top-down parser because it starts from the
      * top or outermost grammar rule (here expression) and works its way down
@@ -23,45 +40,15 @@ class Parser(private val tokens: List<Token>) {
      */
     private fun expression() = equality()
 
-    private fun equality(): Expression {
-        var expr = comparison()
-        while (match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL)) {
-            val operator = previous()
-            val right = comparison()
-            expr = Expression.Binary(expr, operator, right)
-        }
-        return expr
-    }
+    private fun equality() = parseLeftAssociative(listOf(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL), ::comparison)
 
-    private fun comparison(): Expression {
-        var expr = term()
-        while (match(TokenType.LESS, TokenType.LESS_EQUAL, TokenType.GREATER, TokenType.GREATER_EQUAL)) {
-            val operator = previous()
-            val right = term()
-            expr = Expression.Binary(expr, operator, right)
-        }
-        return expr
-    }
+    private fun comparison() = parseLeftAssociative(
+        listOf(TokenType.LESS, TokenType.LESS_EQUAL, TokenType.GREATER, TokenType.GREATER_EQUAL), ::term
+    )
 
-    private fun term(): Expression {
-        var expr = factor()
-        while (match(TokenType.MINUS, TokenType.PLUS)) {
-            val operator = previous()
-            val right = factor()
-            expr = Expression.Binary(expr, operator, right)
-        }
-        return expr
-    }
+    private fun term() = parseLeftAssociative(listOf(TokenType.MINUS, TokenType.PLUS), ::factor)
 
-    private fun factor(): Expression {
-        var expr = unary()
-        while (match(TokenType.STAR, TokenType.SLASH)) {
-            val operator = previous()
-            val right = unary()
-            expr = Expression.Binary(expr, operator, right)
-        }
-        return expr
-    }
+    private fun factor() = parseLeftAssociative(listOf(TokenType.STAR, TokenType.SLASH), ::unary)
 
     private fun unary(): Expression {
         if (match(TokenType.BANG, TokenType.MINUS)) {
@@ -72,24 +59,33 @@ class Parser(private val tokens: List<Token>) {
         return primary()
     }
 
-    private fun primary(): Expression {
-        return when {
-            match(TokenType.FALSE) -> Expression.Literal(false)
-            match(TokenType.TRUE) -> Expression.Literal(true)
-            match(TokenType.NIL) -> Expression.Literal(null)
-            match(TokenType.LEFT_PAREN) -> {
-                val expr = expression()
-                consume(TokenType.RIGHT_PAREN, "Expected ')'")
-                Expression.Grouping(expr)
-            }
-
-            match(TokenType.NUMBER, TokenType.STRING) -> Expression.Literal(previous().literal)
-            else -> throw parserError(peek(), "Expected valid expression")
+    private fun primary() = when {
+        match(TokenType.FALSE) -> Expression.Literal(false)
+        match(TokenType.TRUE) -> Expression.Literal(true)
+        match(TokenType.NIL) -> Expression.Literal(null)
+        match(TokenType.LEFT_PAREN) -> {
+            val expr = expression()
+            consume(TokenType.RIGHT_PAREN, "Expected ')'")
+            Expression.Grouping(expr)
         }
+
+        match(TokenType.NUMBER, TokenType.STRING) -> Expression.Literal(previous().literal)
+        else -> throw parserError(peek(), "Expected valid expression")
     }
 
     /** Returns true if one of [expected] tokens is found, advancing one. */
     private fun match(vararg expected: TokenType): Boolean {
+        for (type in expected) {
+            if (check(type)) {
+                advance()
+                return true
+            }
+        }
+        return false
+    }
+
+    /** Returns true if one of [expected] tokens is found, advancing one. */
+    private fun match(expected: List<TokenType>): Boolean {
         for (type in expected) {
             if (check(type)) {
                 advance()
@@ -144,8 +140,7 @@ class Parser(private val tokens: List<Token>) {
     private fun synchronize() {
         advance()
         while (!end()) {
-            if (previous().type == TokenType.SEMICOLON)
-                return
+            if (previous().type == TokenType.SEMICOLON) return
             advance()
         }
     }
