@@ -1,6 +1,4 @@
-/**
- * AST class. Used to debug our AST.
- */
+/** Used to debug our AST (Abstract Syntax Tree). */
 object AstPrinter : Expression.Visitor<String> {
     /** Prints the AST as debug message. */
     fun debug(expr: Expression) = println(expr.accept(this))

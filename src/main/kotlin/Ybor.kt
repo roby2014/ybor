@@ -12,12 +12,8 @@ object Ybor {
         val tokens = Tokenizer(source).scanTokens()
         val ast = Parser(tokens).parse()
 
-        println(tokens)
-
-        if (!err && ast != null) {
-            AstPrinter.debug(ast)
-        } else {
-            // error
+        ast?.let { it ->
+            AstPrinter.debug(it)
         }
     }
 
@@ -36,9 +32,7 @@ object Ybor {
 
     /** Wrapper for [reportError]. */
     fun error(token: Token, msg: String) = reportError(token.line, token.lexeme, msg)
-
     fun error(line: Int, msg: String) = reportError(line, "", msg)
-
 
     /** Reports error with its [line] and error [msg]. */
     private fun reportError(line: Int, where: String, msg: String) {
