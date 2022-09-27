@@ -1,6 +1,6 @@
 /**
  * Tokenizer class (also known as a Lexer).
- * Implements function to transform our [source] into tokens.
+ * Implements functions to transform our [source] into a list of tokens.
  */
 class Tokenizer(private val source: String) {
     /** token list */
@@ -69,13 +69,14 @@ class Tokenizer(private val source: String) {
             '>' -> if (match('=')) TokenType.GREATER_EQUAL else TokenType.GREATER
             '/' -> {
                 if (match('/')) {
-                    while (!endOfFile() && peek() != '\n') advance()
+                    while (!endOfFile() && peek() != '\n') {
+                        advance()
+                    }
                     TokenType.COMMENT
                 } else {
                     TokenType.SLASH
                 }
             }
-            ' ', '\r', '\t' -> TokenType.WHITESPACE
             else -> null
         }
 
@@ -86,6 +87,7 @@ class Tokenizer(private val source: String) {
 
         // "complex/different" cases
         when (c) {
+            ' ', '\r', '\t' -> {}//ignore
             '\n' -> line++
             '"' -> getStringToken()
             else -> {

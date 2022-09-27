@@ -8,11 +8,10 @@ object Ybor {
 
     /** Executes [source] */
     fun exec(source: String) {
-        val tokens: List<Token> = Tokenizer(source).scanTokens()
+        val tokens = Tokenizer(source).scanTokens()
         val expr = Parser(tokens).parse()
 
-        println("DEBUG:")
-        if (expr != null) {
+        if (expr != null && !err) {
             AstPrinter.debug(expr)
         } else {
             println("Could not parse source input.")
@@ -50,7 +49,7 @@ fun main(args: Array<String>) {
     //testAstPrinter()
 
 // ybor [file (optional)]
-    Ybor.exec("1 * 2")
+    Ybor.exec("(1 * 2) + 5")
     return
     when {
         args.size > 1 || args.isEmpty() -> println("Usage: ybor [file]")

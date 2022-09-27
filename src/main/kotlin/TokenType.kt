@@ -37,7 +37,7 @@ enum class TokenType(val dbg: String = "") {
     WHILE, FOR,
     FUN, NIL, RETURN, THIS, VAR,
 
-    WHITESPACE, NEW_LINE, COMMENT,
+    COMMENT,
 
     EOF("EOF")
 }

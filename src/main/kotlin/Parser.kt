@@ -2,7 +2,7 @@
  * Parser class.
  * @param tokens Token list to parse.
  */
-class Parser(val tokens: List<Token>) {
+class Parser(private val tokens: List<Token>) {
     /** current token index */
     private var current = 0
 
@@ -10,6 +10,7 @@ class Parser(val tokens: List<Token>) {
         return try {
             expression()
         } catch (e: Exception) {
+            println(e.message)
             null
         }
     }
@@ -72,11 +73,11 @@ class Parser(val tokens: List<Token>) {
             match(TokenType.NIL) -> Expression.Literal(null)
             match(TokenType.LEFT_PAREN) -> {
                 val expr = expression()
-                consume(TokenType.RIGHT_PAREN, "Expected )")
+                consume(TokenType.RIGHT_PAREN, "Expected ')'")
                 Expression.Grouping(expr)
             }
             match(TokenType.NUMBER, TokenType.STRING) -> Expression.Literal(previous().literal)
-            else -> throw Exception("Error: expected expression")
+            else -> throw Exception("Expected expression")
         }
     }
 
@@ -106,9 +107,8 @@ class Parser(val tokens: List<Token>) {
         return previous()
     }
 
-    private fun consume(type: TokenType, message: String): Token? {
-        if (match(type)) return advance()
-        // throw error
-        return null
+    private fun consume(type: TokenType, errMsg: String): Token {
+        if (check(type)) return advance()
+        throw Exception(errMsg)
     }
 }
