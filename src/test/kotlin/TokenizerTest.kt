@@ -1,7 +1,8 @@
 import kotlin.test.*
 
 /**
- * Implements tests for [Tokenizer] aKa Lexer class
+ * Implements tests for [Tokenizer] aKa Lexer class.
+ * TODO: Implement more tests
  */
 class TokenizerTest {
 
@@ -13,7 +14,6 @@ class TokenizerTest {
             TokenType.LEFT_PAREN,
             TokenType.RIGHT_PAREN,
             TokenType.RIGHT_PAREN,
-            TokenType.WHITESPACE,
             TokenType.LEFT_BRACE,
             TokenType.RIGHT_BRACE,
             TokenType.EOF
@@ -35,11 +35,8 @@ class TokenizerTest {
             TokenType.EQUAL,
             TokenType.LESS,
             TokenType.GREATER,
-            TokenType.WHITESPACE,
             TokenType.LESS_EQUAL,
-            TokenType.WHITESPACE,
             TokenType.EQUAL_EQUAL,
-            TokenType.WHITESPACE,
             TokenType.COMMENT,
             TokenType.EOF
         )
@@ -70,13 +67,9 @@ class TokenizerTest {
     @Test
     fun `test string parsing`() {
         val tokens = Tokenizer(" \"this is a string\" ").scanTokens()
-        assertEquals(tokens[0].type, TokenType.WHITESPACE)
-
-        assertEquals(tokens[1].type, TokenType.STRING)
-        assertEquals(tokens[1].lexeme, "\"this is a string\"")
-        assertEquals(tokens[1].literal, "this is a string")
-
-        assertEquals(tokens[2].type, TokenType.WHITESPACE)
+        assertEquals(tokens[0].type, TokenType.STRING)
+        assertEquals(tokens[0].lexeme, "\"this is a string\"")
+        assertEquals(tokens[0].literal, "this is a string")
     }
 
     @Test
@@ -99,19 +92,17 @@ class TokenizerTest {
         val tokens = Tokenizer("abc or xd\nfor\nwhile").scanTokens()
         assertEquals(tokens[0].type, TokenType.IDENTIFIER)
         assertEquals(tokens[0].lexeme, "abc")
-        assertEquals(tokens[1].type, TokenType.WHITESPACE)
 
-        assertEquals(tokens[2].type, TokenType.OR)
-        assertEquals(tokens[2].lexeme, "or")
-        assertEquals(tokens[3].type, TokenType.WHITESPACE)
+        assertEquals(tokens[1].type, TokenType.OR)
+        assertEquals(tokens[1].lexeme, "or")
 
-        assertEquals(tokens[4].type, TokenType.IDENTIFIER)
-        assertEquals(tokens[4].lexeme, "xd")
+        assertEquals(tokens[2].type, TokenType.IDENTIFIER)
+        assertEquals(tokens[2].lexeme, "xd")
 
-        assertEquals(tokens[5].type, TokenType.FOR)
-        assertEquals(tokens[5].lexeme, "for")
+        assertEquals(tokens[3].type, TokenType.FOR)
+        assertEquals(tokens[3].lexeme, "for")
 
-        assertEquals(tokens[6].type, TokenType.WHILE)
-        assertEquals(tokens[6].lexeme, "while")
+        assertEquals(tokens[4].type, TokenType.WHILE)
+        assertEquals(tokens[5].lexeme, "while")
     }
 }

@@ -1,6 +1,6 @@
 /**
  * Tokenizer class (also known as a Lexer).
- * Implements functions to transform our [source] into a list of tokens.
+ * Implement functions to transform our [source] into a list of tokens.
  */
 class Tokenizer(private val source: String) {
     /** token list */
@@ -95,7 +95,7 @@ class Tokenizer(private val source: String) {
                     c.isDigit() -> getNumberToken()
                     c.isLetter() -> getIdentifierToken()
                     else -> {
-                        Ybor.error(line, "Unexpected character ($c).")
+                        Ybor.error(line, "Unexpected character '$c'")
                     }
                 }
             }
