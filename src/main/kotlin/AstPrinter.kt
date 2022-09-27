@@ -1,6 +1,5 @@
 /**
- * AST class.
- * Used to debug our AST.
+ * AST class. Used to debug our AST.
  */
 object AstPrinter : Expression.Visitor<String> {
     /** Prints the AST as debug message. */

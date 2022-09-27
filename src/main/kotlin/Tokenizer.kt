@@ -12,7 +12,7 @@ class Tokenizer(private val source: String) {
     /** index of token's lexeme start */
     private var start = 0
 
-    /** index of current character */
+    /** index of current lexing character */
     private var current = 0
 
     /** reserved keywords */
@@ -160,10 +160,10 @@ class Tokenizer(private val source: String) {
         return true
     }
 
-    /** Advance 1 character. */
+    /** Advance 1 character, returning the current one. */
     private fun advance() = source[current++]
 
-    /** Returns character at current+[offset] position. */
+    /** Returns character at [current] + [offset] position. */
     private fun peek(offset: Int = 0): Char {
         val n = current + offset
         return if (n >= source.length) 0.toChar()
