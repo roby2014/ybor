@@ -1,7 +1,7 @@
 /** Used to debug our AST (Abstract Syntax Tree). */
 object AstPrinter : Expression.Visitor<String> {
     /** Prints the AST as debug message. */
-    fun debug(expr: Expression) = println(expr.accept(this))
+    fun debug(expr: Expression) = println("AST: " + expr.accept(this))
 
     override fun visitBinaryExpr(expr: Expression.Binary): String {
         return parenthesize(expr.operator.lexeme, expr.left, expr.right)

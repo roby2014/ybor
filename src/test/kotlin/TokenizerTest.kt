@@ -103,6 +103,6 @@ class TokenizerTest {
         assertEquals(tokens[3].lexeme, "for")
 
         assertEquals(tokens[4].type, TokenType.WHILE)
-        assertEquals(tokens[5].lexeme, "while")
+        assertEquals(tokens[4].lexeme, "while")
     }
 }
