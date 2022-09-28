@@ -1,9 +1,9 @@
 /**
  * Represents the token's type.
- * [dbg] is text describing how the token lexeme could look like,
+ * [lexeme] is text describing how the token lexeme could look like,
  * but it's not really useful for now.
  */
-enum class TokenType(val dbg: String = "") {
+enum class TokenType(val lexeme: String = "") {
     // literals
     IDENTIFIER, STRING, NUMBER,
 

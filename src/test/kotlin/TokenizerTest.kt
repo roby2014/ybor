@@ -50,7 +50,7 @@ class TokenizerTest {
         val tokens = Tokenizer("(()) {} !*+-/=<> <= == //").scanTokens()
         for (tkType in TokenType.values()) {
             for (tk in tokens) {
-                if (tk.lexeme == tkType.dbg) {
+                if (tk.lexeme == tkType.lexeme) {
                     assertEquals(tk.type, tkType)
                 }
             }

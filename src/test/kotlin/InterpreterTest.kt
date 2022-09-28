@@ -2,7 +2,6 @@ import kotlin.test.*
 
 /** Implements unit tests for [Interpreter]. */
 class InterpreterTest {
-
     @Test
     fun `test math #1`() {
         val tokens = Tokenizer("1+2").scanTokens()
@@ -74,28 +73,77 @@ class InterpreterTest {
     }
 
     @Test
-    fun `test invalid expression #1`() {
+    fun `test valid comparisons with numbers (greater, greater or equal, less, less or equal)`() {
+        val tests = listOf(
+            "1 > 2" to false,
+            "1 >= 2" to false,
+            "1 < 2" to true,
+            "1 <= 2" to true,
+            "1 <= \"a\"" to null,
+        )
+        tests.forEach { (test, expected) ->
+            val tokens = Tokenizer(test).scanTokens()
+            val ast = Parser(tokens).parse()!!
+            assert(Interpreter.interpret(ast) == expected)
+        }
+    }
+
+    @Test
+    fun `test boolean expressions with numbers (equal, not equal)`() {
+        val tests = listOf(
+            "1 == 2" to false,
+            "1 != 2" to true,
+            "1 == 1" to true,
+            "1 != 1" to false,
+            "1 == \"a\"" to false,
+            "1 != \"a\"" to true
+        )
+        tests.forEach { (test, expected) ->
+            val tokens = Tokenizer(test).scanTokens()
+            val ast = Parser(tokens).parse()!!
+            assert(Interpreter.interpret(ast) == expected)
+        }
+    }
+
+    @Test
+    fun `test boolean expressions with strings (equal, not equal)`() {
+        val tests = listOf(
+            "\"abc\" != \"abc\"" to false,
+            "\"abc\" == \"abc\"" to true,
+            "\"abc\" != \"a\"" to true,
+            "\"abc\" == \"a\"" to false,
+            "\"abc\" == 1" to false
+        )
+        tests.forEach { (test, expected) ->
+            val tokens = Tokenizer(test).scanTokens()
+            val ast = Parser(tokens).parse()!!
+            assert(Interpreter.interpret(ast) == expected)
+        }
+    }
+
+    @Test
+    fun `test invalid expression #1 (add number with string)`() {
         val tokens = Tokenizer("1+\"a\"").scanTokens()
         val ast = Parser(tokens).parse()!!
         assert(Interpreter.interpret(ast) == null)
     }
 
     @Test
-    fun `test invalid expression #2`() {
+    fun `test invalid expression #2 (sub number by string)`() {
         val tokens = Tokenizer("1-\"a\"").scanTokens()
         val ast = Parser(tokens).parse()!!
         assert(Interpreter.interpret(ast) == null)
     }
 
     @Test
-    fun `test invalid expression #3`() {
+    fun `test invalid expression #3 (multiply number by string)`() {
         val tokens = Tokenizer("1*\"a\"").scanTokens()
         val ast = Parser(tokens).parse()!!
         assert(Interpreter.interpret(ast) == null)
     }
 
     @Test
-    fun `test invalid expression #4`() {
+    fun `test invalid expression #4 (divide number by string)`() {
         val tokens = Tokenizer("1/\"a\"").scanTokens()
         val ast = Parser(tokens).parse()!!
         assert(Interpreter.interpret(ast) == null)

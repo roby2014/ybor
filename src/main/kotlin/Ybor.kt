@@ -1,4 +1,5 @@
 import java.io.File
+import kotlin.system.exitProcess
 
 /**
  * Main functions to make the interpreter run code or debug/display errors.
@@ -15,6 +16,9 @@ object Ybor {
         val tokens = Tokenizer(source).scanTokens()
         val ast = Parser(tokens).parse()
 
+        if (err || runtimeErr)
+            return
+
         ast?.let { it ->
             AstPrinter.debug(it)
             println("Result: ${Interpreter.interpret(it)}")
@@ -22,15 +26,22 @@ object Ybor {
     }
 
     /** Executes [filename] source content. */
-    fun execFile(filename: String) = exec(File(filename).readText())
+    fun execFile(filename: String) {
+        val src = File(filename).readText()
+        exec(src)
+        if (err || runtimeErr)
+            exitProcess(1337) // TODO: different status code for syntax/runtime error
+    }
 
-    /** Runs a prompt where custom commands can be executed. */
+    /** Runs a prompt where custom commands can be executed (aKa REPL: read–eval–print-loop). */
     fun execPrompt() {
         while (true) {
             print("> ")
             val input = readln()
             if (input.isEmpty() || input == "exit") break
             exec(input)
+            err = false;
+            // runtimeErr = false // I suppose the REPL does not care about runtime errors since its single expressions(?)
         }
     }
 

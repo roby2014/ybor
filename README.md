@@ -10,7 +10,7 @@ Contains:
 
 For now, it can parse single line expressions, respecting grammar precedence, and also evaluate them!
 
-```
+```shell
 > 1+2
 AST: (+ 1.0 2.0)
 Result: 3.0
@@ -35,7 +35,7 @@ Result: helloworld
 
 > "cool interpreter" - "cool "
 AST: (- cool interpreter cool)
-Result:  interpreter
+Result: interpreter
 
 > -5
 AST: (- 5.0)
@@ -46,12 +46,26 @@ AST: (- invalid_unary)
 [line 1] ERROR at '-': Operand must be a number
 Result: null
 
-> 
-```
+> 2 > 2
+AST: (> 2.0 2.0)
+Result: false
 
-## TODO
-- Evaluate expressions (`1+2` should return `3`, etc..)
-- Variables, functions, etc....
+> 2 >= 2
+AST: (>= 2.0 2.0)
+Result: true
+
+> 2 == 2
+AST: (== 2.0 2.0)
+Result: true
+
+> "abc" == "abc"
+AST: (== abc abc)
+Result: true
+
+> "abc" != "cba"
+AST: (!= abc cba)
+Result: true
+```
 
 ## why?
 Lately I've been reading about Compilers / Interpreters, so this repository contains a basic project which
