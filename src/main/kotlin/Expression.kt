@@ -4,10 +4,16 @@ abstract class Expression {
 	abstract fun <T> accept(visitor: Visitor<T>): T
 
 	interface Visitor<T> {
+		fun visitAssignExpression(expression: Assign): T
 		fun visitBinaryExpression(expression: Binary): T
 		fun visitGroupingExpression(expression: Grouping): T
 		fun visitLiteralExpression(expression: Literal): T
 		fun visitUnaryExpression(expression: Unary): T
+		fun visitVariableExpression(expression: Variable): T
+	}
+
+	data class Assign(val name: Token, val value: Expression): Expression() {
+		override fun <T> accept(visitor: Visitor<T>) = visitor.visitAssignExpression(this)
 	}
 
 	data class Binary(val left: Expression, val operator: Token, val right: Expression): Expression() {
@@ -24,6 +30,10 @@ abstract class Expression {
 
 	data class Unary(val operator: Token, val right: Expression): Expression() {
 		override fun <T> accept(visitor: Visitor<T>) = visitor.visitUnaryExpression(this)
+	}
+
+	data class Variable(val name: Token): Expression() {
+		override fun <T> accept(visitor: Visitor<T>) = visitor.visitVariableExpression(this)
 	}
 
 }

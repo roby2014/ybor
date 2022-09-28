@@ -16,7 +16,7 @@ object Ybor {
         val tokens = Tokenizer(source).scanTokens()
         val ast = Parser(tokens).parseStatements()
 
-        if (err || runtimeErr)
+        if (err)
             return
 
         Interpreter.interpret(ast)
@@ -26,7 +26,7 @@ object Ybor {
     fun execFile(filename: String) {
         val src = File(filename).readText()
         exec(src)
-        if (err || runtimeErr)
+        if (err)
             exitProcess(1337) // TODO: different status code for syntax/runtime error
     }
 
@@ -54,7 +54,7 @@ object Ybor {
 
     /** Reports a runtime error */
     fun runtimeError(error: RuntimeError) {
-        println("[line ${error.token.line}] ERROR at '${error.token.lexeme}': ${error.message}")
+        println("[line ${error.token.line}] ERROR: ${error.message}")
         runtimeErr = true
     }
 }

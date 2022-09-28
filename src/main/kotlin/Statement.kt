@@ -6,6 +6,7 @@ abstract class Statement {
 	interface Visitor<T> {
 		fun visitExprStatement(statement: Expr): T
 		fun visitPrintStatement(statement: Print): T
+		fun visitVariableStatement(statement: Variable): T
 	}
 
 	data class Expr(val expr: Expression): Statement() {
@@ -14,6 +15,10 @@ abstract class Statement {
 
 	data class Print(val expr: Expression): Statement() {
 		override fun <T> accept(visitor: Visitor<T>) = visitor.visitPrintStatement(this)
+	}
+
+	data class Variable(val name: Token, val value: Expression?): Statement() {
+		override fun <T> accept(visitor: Visitor<T>) = visitor.visitVariableStatement(this)
 	}
 
 }

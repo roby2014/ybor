@@ -8,9 +8,7 @@ Contains:
 - [Parser](https://github.com/roby2014/ybor/blob/main/src/main/kotlin/Parser.kt) // Parses list of tokens into an AST (Abstract Syntax Tree)
 - [Interpreter](https://github.com/roby2014/ybor/blob/main/src/main/kotlin/Interpreter.kt) // Evaluates the expressions
 
-For now, it can parse statements, respecting grammar precedence, and also evaluate the expressions if any!
-
-*You can use `print <expr> ;` or just `<expr> ;` for now*
+Some examples of what it can do at the moment:
 
 ```shell
 > 1+2 ;
@@ -67,6 +65,23 @@ Result: true
 > "abc" != "cba" ;
 AST: (!= abc cba)
 Result: true
+
+> var a = 3;
+> print a;
+3.0
+
+> var b;
+> b = 5;
+5.0
+
+> a == b;
+false
+
+> a = b;
+5.0
+
+> a == b;
+true
 ```
 
 ## why?

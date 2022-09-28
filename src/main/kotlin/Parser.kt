@@ -1,9 +1,9 @@
-import Statement.Expr
-
-
 /**
  * Parser class.
  * @param tokens Token list to parse.
+ * "Recursive descent is considered a top-down parser because it starts from the
+ * top or outermost grammar rule (here expression) and works its way down
+ * into the nested subexpressions before finally reaching the leaves of the syntax tree."
  */
 class Parser(private val tokens: List<Token>) {
     private class ParserError : Exception()
@@ -21,9 +21,44 @@ class Parser(private val tokens: List<Token>) {
     fun parseStatements(): List<Statement> {
         val statements = mutableListOf<Statement>()
         while (!end()) {
-            statements.add(statement() ?: continue)
+            statements.add(declaration() ?: continue)
         }
         return statements
+    }
+
+    /** This is where the top-down parser starts. */
+    private fun declaration() = try {
+        when {
+            match(TokenType.VAR) -> varDeclaration()
+            else -> statement()
+        }
+    } catch (e: ParserError) {
+        synchronize()
+        null
+    }
+
+    private fun statement() = when {
+        match(TokenType.PRINT) -> printStatement()
+        else -> expressionStatement()
+    }
+
+    private fun expressionStatement(): Statement {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expected ';' after expression")
+        return Statement.Expr(value)
+    }
+
+    private fun printStatement(): Statement {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expected ';' after print statement")
+        return Statement.Print(value)
+    }
+
+    private fun varDeclaration(): Statement {
+        val name = consume(TokenType.IDENTIFIER, "Expected variable name")
+        val value = if (match(TokenType.EQUAL)) expression() else null
+        consume(TokenType.SEMICOLON, "Expected ';' after variable declaration")
+        return Statement.Variable(name, value)
     }
 
     /**
@@ -43,34 +78,21 @@ class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    /** This is where the top-down parser starts.
-     * "Recursive descent is considered a top-down parser because it starts from the
-     * top or outermost grammar rule (here expression) and works its way down
-     * into the nested subexpressions before finally reaching the leaves of the syntax tree."
-     */
-    private fun statement() = try {
-        when {
-            match(TokenType.PRINT) -> printStatement()
-            else -> expressionStatement()
+    private fun expression() = assignment()
+
+    private fun assignment(): Expression {
+        val expr = equality()
+
+        if (match(TokenType.EQUAL)) {
+            if (expr is Expression.Variable) {
+                val value = expression()
+                return Expression.Assign(expr.name, value)
+            }
+            parserError(previous(), "Invalid assignment target.")
         }
-    } catch (e: ParserError) {
-        synchronize()
-        null
-    }
 
-    private fun expressionStatement(): Statement {
-        val value = expression()
-        consume(TokenType.SEMICOLON, "Expected ';' after expression")
-        return Statement.Expr(value)
+        return expr
     }
-
-    private fun printStatement(): Statement {
-        val value = expression()
-        consume(TokenType.SEMICOLON, "Expected ';' after print statement")
-        return Statement.Print(value)
-    }
-
-    private fun expression() = equality()
 
     private fun equality() = parseLeftAssociative(listOf(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL), ::comparison)
 
@@ -101,6 +123,7 @@ class Parser(private val tokens: List<Token>) {
             Expression.Grouping(expr)
         }
         match(TokenType.NUMBER, TokenType.STRING) -> Expression.Literal(previous().literal)
+        match(TokenType.IDENTIFIER) -> Expression.Variable(previous())
         else -> throw parserError(peek(), "Expected valid expression")
     }
 

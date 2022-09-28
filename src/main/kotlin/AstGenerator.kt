@@ -11,17 +11,20 @@ fun main(args: Array<String>) {
 
     AstGenerator.defineAst(
         outputDir, "Expression", listOf(
+            "Assign     : Token name, Expression value",
             "Binary     : Expression left, Token operator, Expression right",
             "Grouping   : Expression expr",
             "Literal    : Any? value",
             "Unary      : Token operator, Expression right",
+            "Variable   : Token name"
         )
     )
 
     AstGenerator.defineAst(
         outputDir, "Statement", listOf(
-            "Expr   : Expression expr",
-            "Print  : Expression expr",
+            "Expr        : Expression expr",
+            "Print       : Expression expr",
+            "Variable    : Token name, Expression? value"
         )
     )
 }

@@ -25,4 +25,12 @@ object AstPrinter : Expression.Visitor<String> {
 
     override fun visitUnaryExpression(expression: Expression.Unary) =
         parenthesize(expression.operator.lexeme, expression.right)
+
+    override fun visitVariableExpression(expression: Expression.Variable): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitAssignExpression(expression: Expression.Assign): String {
+        TODO("Not yet implemented")
+    }
 }
