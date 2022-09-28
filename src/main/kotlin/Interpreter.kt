@@ -2,46 +2,57 @@
  * Interpreter singleton.
  * Contains functions to interpret/run the code.
  */
-object Interpreter : Expression.Visitor<Any?> {
-    /** "Interprets" [expression], returning its evaluated value or null if any runtime error occurred. */
-    fun interpret(expression: Expression) = try {
-        eval(expression)
+object Interpreter : Expression.Visitor<Any?>, Statement.Visitor<Unit> {
+
+    /** "Interprets" various [statements]. */
+    fun interpret(statements: List<Statement>) = try {
+        statements.forEach(::execute)
     } catch (error: RuntimeError) {
         Ybor.runtimeError(error)
-        null
     }
 
+    /** Executes [statement]. */
+    fun execute(statement: Statement): Any = statement.accept(this)
+
     /** Evaluates [expr] and returns its value. */
-    private fun eval(expr: Expression): Any? = expr.accept(this)
+    fun eval(expr: Expression): Any? = expr.accept(this)
 
     /** Binary expressions' evaluation. */
-    override fun visitBinaryExpr(expr: Expression.Binary): Any {
-        val (left, right) = eval(expr.left) to eval(expr.right)
-        return when (val type = expr.operator.type) {
-            TokenType.PLUS -> sum(left, right, expr.operator)
-            TokenType.MINUS -> sub(left, right, expr.operator)
-            TokenType.SLASH -> div(left, right, expr.operator)
-            TokenType.STAR -> mult(left, right, expr.operator)
+    override fun visitBinaryExpression(expression: Expression.Binary): Any {
+        val (left, right) = eval(expression.left) to eval(expression.right)
+        return when (val type = expression.operator.type) {
+            TokenType.PLUS -> sum(left, right, expression.operator)
+            TokenType.MINUS -> sub(left, right, expression.operator)
+            TokenType.SLASH -> div(left, right, expression.operator)
+            TokenType.STAR -> mult(left, right, expression.operator)
             TokenType.EQUAL_EQUAL -> left == right
             TokenType.BANG_EQUAL -> left != right
-            else -> cmp(left, right, type, expr.operator) // GREATER, GREATER_EQUAL, LESS, LESS_EQUAL
+            else -> cmp(left, right, type, expression.operator) // GREATER, GREATER_EQUAL, LESS, LESS_EQUAL
         }
     }
 
     /** Grouping expressions' evaluation. */
-    override fun visitGroupingExpr(expr: Expression.Grouping): Any? = eval(expr.expr)
+    override fun visitGroupingExpression(expression: Expression.Grouping): Any? = eval(expression.expr)
 
     /** Literal expressions' evaluation. */
-    override fun visitLiteralExpr(expr: Expression.Literal): Any? = expr.value
+    override fun visitLiteralExpression(expression: Expression.Literal): Any? = expression.value
 
     /** Unary expressions' evaluation. */
-    override fun visitUnaryExpr(expr: Expression.Unary): Any? {
-        val right = eval(expr.right)
-        return when (expr.operator.type) {
-            TokenType.MINUS -> getOppositeNumber(right, expr.operator)
+    override fun visitUnaryExpression(expression: Expression.Unary): Any? {
+        val right = eval(expression.right)
+        return when (expression.operator.type) {
+            TokenType.MINUS -> getOppositeNumber(right, expression.operator)
             TokenType.BANG -> !isTruthy(right)
             else -> null // Unreachable(!?)
         }
+    }
+
+    override fun visitExprStatement(statement: Statement.Expr) {
+        println(eval(statement.expr))
+    }
+
+    override fun visitPrintStatement(statement: Statement.Print) {
+        println(eval(statement.expr))
     }
 
     /** "false and nil are false, and everything else is truthy." */
@@ -58,33 +69,33 @@ object Interpreter : Expression.Visitor<Any?> {
     }
 
     /** Helper function to do sums between Double or Strings (concatenate). */
-    private fun <T> sum(left: T, right: T, operator: Token): Any = when {
+    private fun sum(left: Any?, right: Any?, operator: Token): Any = when {
         left is Double && right is Double -> left + right
         left is String && right is String -> left + right
         else -> throw RuntimeError(operator, "Can't sum '$left' with '$right'")
     }
 
     /** Helper function to do subs between numbers or Strings. */
-    private fun <T> sub(left: T, right: T, operator: Token): Any = when {
+    private fun sub(left: Any?, right: Any?, operator: Token): Any = when {
         left is Double && right is Double -> left - right
         left is String && right is String -> left.replace(right, "")
         else -> throw RuntimeError(operator, "Can't sub '$left' with '$right'")
     }
 
     /** Helper function to multiply numbers. */
-    private fun <T> mult(left: T, right: T, operator: Token): Any = when {
+    private fun mult(left: Any?, right: Any?, operator: Token): Any = when {
         left is Double && right is Double -> left * right
         else -> throw RuntimeError(operator, "Can't multiply '$left' with '$right'")
     }
 
     /** Helper function to do numbers division. */
-    private fun <T> div(left: T, right: T, operator: Token): Any = when {
+    private fun div(left: Any?, right: Any?, operator: Token): Any = when {
         left is Double && right is Double -> left / right
         else -> throw RuntimeError(operator, "Can't divide '$left' with '$right'")
     }
 
     /** Helper function to do compare numbers. */
-    private fun <T> cmp(left: T, right: T, cmpType: TokenType, operator: Token): Any = when {
+    private fun cmp(left: Any?, right: Any?, cmpType: TokenType, operator: Token): Any = when {
         left is Double && right is Double -> when (cmpType) {
             TokenType.GREATER -> left > right
             TokenType.GREATER_EQUAL -> left >= right

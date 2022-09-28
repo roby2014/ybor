@@ -37,6 +37,8 @@ enum class TokenType(val lexeme: String = "") {
     WHILE, FOR,
     FUN, NIL, RETURN, THIS, VAR,
 
+    PRINT,
+
     COMMENT,
 
     EOF("EOF")

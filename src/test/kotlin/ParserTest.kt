@@ -16,7 +16,7 @@ class ParserTest {
             Token(TokenType.NUMBER, "2", 2.0, 1),
             Token(TokenType.EOF, "EOF", null, 1)
         )
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
 
         val expectedLeft = Expression.Literal(1.0)
         val expectedOperator = Token(TokenType.PLUS, "+", null, 1)
@@ -28,7 +28,7 @@ class ParserTest {
     @Test
     fun `test parser with simple math expression`() {
         val tokens = Tokenizer("1+2").scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
 
         val expectedLeft = Expression.Literal(1.0)
         val expectedOperator = Token(TokenType.PLUS, "+", null, 1)
@@ -40,7 +40,7 @@ class ParserTest {
     @Test
     fun `test parser with simple math expression to test multiplication precedence`() {
         val tokens = Tokenizer("1+2*3").scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
 
         val expectedLeft = Expression.Literal(1.0)
         val expectedOperator = Token(TokenType.PLUS, "+", null, 1)
@@ -53,7 +53,7 @@ class ParserTest {
     @Test
     fun `test parser with simple math expression to test parentheses precedence`() {
         val tokens = Tokenizer("(1+2)*3").scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
 
         val expectedOperator = Token(TokenType.PLUS, "+", null, 1)
         val expectedOperator2 = Token(TokenType.STAR, "*", null, 1)
@@ -66,14 +66,14 @@ class ParserTest {
     @Test
     fun `test parser with invalid expression input`() {
         val tokens = Tokenizer("abc").scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
         assertEquals(ast, null)
     }
 
     @Test
     fun `test parser with string input`() {
         val tokens = Tokenizer("\"abc\"").scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseExpr()
         assertEquals(ast, Expression.Literal("abc"))
     }
 }

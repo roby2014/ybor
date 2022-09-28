@@ -1,5 +1,6 @@
 /** Used to debug our AST (Abstract Syntax Tree). */
 object AstPrinter : Expression.Visitor<String> {
+
     /** Prints the AST as debug message. */
     fun debug(expr: Expression) = println("AST: " + expr.accept(this))
 
@@ -12,14 +13,16 @@ object AstPrinter : Expression.Visitor<String> {
         return builder.append(")").toString();
     }
 
-    override fun visitBinaryExpr(expr: Expression.Binary) = parenthesize(expr.operator.lexeme, expr.left, expr.right)
+    override fun visitBinaryExpression(expression: Expression.Binary) =
+        parenthesize(expression.operator.lexeme, expression.left, expression.right)
 
-    override fun visitGroupingExpr(expr: Expression.Grouping) = parenthesize("group", expr.expr)
+    override fun visitGroupingExpression(expression: Expression.Grouping) = parenthesize("group", expression.expr)
 
-    override fun visitLiteralExpr(expr: Expression.Literal): String {
-        val v = expr.value ?: return "nil"
+    override fun visitLiteralExpression(expression: Expression.Literal): String {
+        val v = expression.value ?: return "nil"
         return v.toString()
     }
 
-    override fun visitUnaryExpr(expr: Expression.Unary) = parenthesize(expr.operator.lexeme, expr.right)
+    override fun visitUnaryExpression(expression: Expression.Unary) =
+        parenthesize(expression.operator.lexeme, expression.right)
 }

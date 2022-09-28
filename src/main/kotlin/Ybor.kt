@@ -14,15 +14,12 @@ object Ybor {
     /** Executes [source] */
     fun exec(source: String) {
         val tokens = Tokenizer(source).scanTokens()
-        val ast = Parser(tokens).parse()
+        val ast = Parser(tokens).parseStatements()
 
         if (err || runtimeErr)
             return
 
-        ast?.let { it ->
-            AstPrinter.debug(it)
-            println("Result: ${Interpreter.interpret(it)}")
-        }
+        Interpreter.interpret(ast)
     }
 
     /** Executes [filename] source content. */
@@ -40,7 +37,7 @@ object Ybor {
             val input = readln()
             if (input.isEmpty() || input == "exit") break
             exec(input)
-            err = false;
+            err = false
             // runtimeErr = false // I suppose the REPL does not care about runtime errors since its single expressions(?)
         }
     }

@@ -1,3 +1,6 @@
+import Statement.Expr
+
+
 /**
  * Parser class.
  * @param tokens Token list to parse.
@@ -8,12 +11,19 @@ class Parser(private val tokens: List<Token>) {
     /** current token index */
     private var current = 0
 
-    /** Parses tokens, returning the AST if success, null otherwise. */
-    fun parse() = try {
+    /** Parses tokens, returning the AST if success, null otherwise. This works for single line expressions. */
+    fun parseExpr() = try {
         expression()
     } catch (e: ParserError) {
-        //synchronize()
         null
+    }
+
+    fun parseStatements(): List<Statement> {
+        val statements = mutableListOf<Statement>()
+        while (!end()) {
+            statements.add(statement() ?: continue)
+        }
+        return statements
     }
 
     /**
@@ -38,6 +48,28 @@ class Parser(private val tokens: List<Token>) {
      * top or outermost grammar rule (here expression) and works its way down
      * into the nested subexpressions before finally reaching the leaves of the syntax tree."
      */
+    private fun statement() = try {
+        when {
+            match(TokenType.PRINT) -> printStatement()
+            else -> expressionStatement()
+        }
+    } catch (e: ParserError) {
+        synchronize()
+        null
+    }
+
+    private fun expressionStatement(): Statement {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expected ';' after expression")
+        return Statement.Expr(value)
+    }
+
+    private fun printStatement(): Statement {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expected ';' after print statement")
+        return Statement.Print(value)
+    }
+
     private fun expression() = equality()
 
     private fun equality() = parseLeftAssociative(listOf(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL), ::comparison)
@@ -68,7 +100,6 @@ class Parser(private val tokens: List<Token>) {
             consume(TokenType.RIGHT_PAREN, "Expected ')'")
             Expression.Grouping(expr)
         }
-
         match(TokenType.NUMBER, TokenType.STRING) -> Expression.Literal(previous().literal)
         else -> throw parserError(peek(), "Expected valid expression")
     }

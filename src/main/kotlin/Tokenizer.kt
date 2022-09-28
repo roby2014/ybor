@@ -3,11 +3,12 @@
  * Implement functions to transform our [source] into a list of tokens.
  */
 class Tokenizer(private val source: String) {
+
     /** token list */
     var tokens = mutableListOf<Token>()
 
     /** current line count */
-    var line = 1
+    private var line = 1
 
     /** index of token's lexeme start */
     private var start = 0
@@ -31,6 +32,7 @@ class Tokenizer(private val source: String) {
         "return" to TokenType.RETURN,
         "var" to TokenType.VAR,
         "this" to TokenType.THIS,
+        "print" to TokenType.PRINT,
     )
 
     /** Reads source input and scan for tokens. */
