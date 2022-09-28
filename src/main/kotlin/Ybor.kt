@@ -7,6 +7,9 @@ object Ybor {
     /** True if there was an error reported (by the lexer/parser) */
     private var err = false
 
+    /** True if there was a runtime error reported (by the interpreter) */
+    private var runtimeErr = false
+
     /** Executes [source] */
     fun exec(source: String) {
         val tokens = Tokenizer(source).scanTokens()
@@ -14,6 +17,7 @@ object Ybor {
 
         ast?.let { it ->
             AstPrinter.debug(it)
+            println("Result: ${Interpreter.interpret(it)}")
         }
     }
 
@@ -38,5 +42,11 @@ object Ybor {
     private fun reportError(line: Int, where: String, msg: String) {
         println("[line $line] ERROR at '$where': $msg")
         err = true
+    }
+
+    /** Reports a runtime error */
+    fun runtimeError(error: RuntimeError) {
+        println("[line ${error.token.line}] ERROR at '${error.token.lexeme}': ${error.message}")
+        runtimeErr = true
     }
 }
