@@ -1,9 +1,75 @@
-import kotlin.test.*
+import com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOut
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /** Implements unit tests for [Interpreter]. */
 class InterpreterTest {
 
-    // TODO: test statements and their output...
+    /// Statements tests
+
+    @Test
+    fun `test variable declaration and print statement`() {
+        val src = """
+            var a = 1+2;
+            print a;
+            """
+        val tokens = Tokenizer(src).scanTokens()
+        val statements = Parser(tokens).parseStatements()
+        val output = tapSystemOut { Interpreter.interpret(statements) }
+        assertEquals("3.0", output.trim())
+    }
+
+    @Test
+    fun `test printing undefined variable`() {
+        val src = """
+            print b;
+            """
+        val tokens = Tokenizer(src).scanTokens()
+        val statements = Parser(tokens).parseStatements()
+        val output = tapSystemOut { Interpreter.interpret(statements) }
+        assertTrue(output.contains("Undefined variable 'b'"))
+    }
+
+    @Test
+    fun `test printing invalid expression`() {
+        val src = """
+            print "aaa"+1;
+            """
+        val tokens = Tokenizer(src).scanTokens()
+        val statements = Parser(tokens).parseStatements()
+        val output = tapSystemOut { Interpreter.interpret(statements) }
+        assertTrue(output.contains("Can't sum 'aaa' with '1.0'"))
+    }
+
+    @Test
+    fun `test printing variable from another block`() {
+        val src =
+            """
+            {
+                var a = 3;
+                print a;
+            }
+            print a;
+            """
+        val tokens = Tokenizer(src).scanTokens()
+        val statements = Parser(tokens).parseStatements()
+        val output = tapSystemOut { Interpreter.interpret(statements) }
+        assertEquals(output.split("\n")[0].toDouble(), 3.0)
+        assertTrue(output.contains("Undefined variable 'a'")) // line 6
+    }
+
+    @Test
+    fun `test division by 0`() {
+        val src = """
+            print 1/0;
+            """
+        val tokens = Tokenizer(src).scanTokens()
+        val statements = Parser(tokens).parseStatements()
+        val output = tapSystemOut { Interpreter.interpret(statements) }
+        assertTrue(output.contains("Can't divide by 0"))
+    }
 
     /// Expressions evaluation tests
 
@@ -74,7 +140,10 @@ class InterpreterTest {
     fun `test eval invalid unary (negative string)`() {
         val tokens = Tokenizer("-\"a\"").scanTokens()
         val ast = Parser(tokens).parseExpr()!!
-        assert(Interpreter.eval(ast) == null)
+        assertFailsWith<RuntimeError>(
+            message = "Operand must be a number",
+            block = { Interpreter.eval(ast) }
+        )
     }
 
     @Test
@@ -85,7 +154,6 @@ class InterpreterTest {
                 "1 >= 2" to false,
                 "1 < 2" to true,
                 "1 <= 2" to true,
-                "1 <= \"a\"" to null,
             )
         tests.forEach { (test, expected) ->
             val tokens = Tokenizer(test).scanTokens()
@@ -133,27 +201,39 @@ class InterpreterTest {
     fun `test eval invalid expression #1 (add number with string)`() {
         val tokens = Tokenizer("1+\"a\"").scanTokens()
         val ast = Parser(tokens).parseExpr()!!
-        assert(Interpreter.eval(ast) == null)
+        assertFailsWith<RuntimeError>(
+            message = "Can't sum '1.0' with 'a'",
+            block = { Interpreter.eval(ast) }
+        )
     }
 
     @Test
     fun `test eval invalid expression #2 (sub number by string)`() {
         val tokens = Tokenizer("1-\"a\"").scanTokens()
         val ast = Parser(tokens).parseExpr()!!
-        assert(Interpreter.eval(ast) == null)
+        assertFailsWith<RuntimeError>(
+            message = "Can't sub '1.0' with 'a'",
+            block = { Interpreter.eval(ast) }
+        )
     }
 
     @Test
     fun `test eval invalid expression #3 (multiply number by string)`() {
         val tokens = Tokenizer("1*\"a\"").scanTokens()
         val ast = Parser(tokens).parseExpr()!!
-        assert(Interpreter.eval(ast) == null)
+        assertFailsWith<RuntimeError>(
+            message = "Can't multiply '1.0' with 'a'",
+            block = { Interpreter.eval(ast) }
+        )
     }
 
     @Test
     fun `test eval invalid expression #4 (divide number by string)`() {
         val tokens = Tokenizer("1/\"a\"").scanTokens()
         val ast = Parser(tokens).parseExpr()!!
-        assert(Interpreter.eval(ast) == null)
+        assertFailsWith<RuntimeError>(
+            message = "Can't divide '1.0' by 'a'",
+            block = { Interpreter.eval(ast) }
+        )
     }
 }
