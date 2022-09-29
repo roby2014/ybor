@@ -26,21 +26,22 @@ class Parser(private val tokens: List<Token>) {
     fun parseStatements(): List<Statement> {
         val statements = mutableListOf<Statement>()
         while (!end()) {
-            statements.add(declaration() ?: continue)
+            try {
+                statements.add(declaration())
+            } catch (e: ParserError) {
+                synchronize()
+            }
         }
         return statements
     }
 
+    /// Grammar functions
+
     /** This is where the top-down parser starts. */
     private fun declaration() =
-        try {
-            when {
-                match(TokenType.VAR) -> varDeclaration()
-                else -> statement()
-            }
-        } catch (e: ParserError) {
-            synchronize()
-            null
+        when {
+            match(TokenType.VAR) -> varDeclaration()
+            else -> statement()
         }
 
     private fun statement() =
@@ -53,7 +54,7 @@ class Parser(private val tokens: List<Token>) {
     private fun block(): Statement {
         val statements = mutableListOf<Statement>()
         while (!check(TokenType.RIGHT_BRACE) && !end()) {
-            statements.add(declaration() ?: continue)
+            statements.add(declaration())
         }
         consume(TokenType.RIGHT_BRACE, "Expected '}' after block")
         return Statement.Block(statements)
@@ -76,25 +77,6 @@ class Parser(private val tokens: List<Token>) {
         val value = if (match(TokenType.EQUAL)) expression() else null
         consume(TokenType.SEMICOLON, "Expected ';' after variable declaration")
         return Statement.Variable(name, value)
-    }
-
-    /**
-     * Helper method to parse left associative binary expressions, such as: Equality, comparison,
-     * term, factor, ... This reduces redundant code.
-     * @param tokenTypes Token types to match
-     * @param method Higher precedence parse method
-     */
-    private fun parseLeftAssociative(
-        tokenTypes: List<TokenType>,
-        method: () -> Expression
-    ): Expression {
-        var expr = method()
-        while (match(tokenTypes)) {
-            val operator = previous()
-            val right = method()
-            expr = Expression.Binary(expr, operator, right)
-        }
-        return expr
     }
 
     private fun expression() = assignment()
@@ -154,6 +136,25 @@ class Parser(private val tokens: List<Token>) {
             match(TokenType.IDENTIFIER) -> Expression.Variable(previous())
             else -> throw parserError(peek(), "Expected valid expression")
         }
+
+    /**
+     * Helper method to parse left associative binary expressions, such as: Equality, comparison,
+     * term, factor, ... This reduces redundant code.
+     * @param tokenTypes Token types to match
+     * @param method Higher precedence parse method
+     */
+    private fun parseLeftAssociative(
+        tokenTypes: List<TokenType>,
+        method: () -> Expression
+    ): Expression {
+        var expr = method()
+        while (match(tokenTypes)) {
+            val operator = previous()
+            val right = method()
+            expr = Expression.Binary(expr, operator, right)
+        }
+        return expr
+    }
 
     /** Returns true if one of [expected] tokens is found, advancing one. */
     private fun match(vararg expected: TokenType): Boolean {
