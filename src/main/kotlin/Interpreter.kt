@@ -1,6 +1,5 @@
 /** Interpreter singleton. Contains functions to interpret/run the code. */
-object Interpreter : Expression.Visitor<Any?>, Statement.Visitor<Unit> {
-
+object Interpreter : StatementVisitor<Unit>, ExpressionVisitor<Any?> {
     /** Environment to store variables. */
     private var env = Environment()
 
@@ -13,7 +12,7 @@ object Interpreter : Expression.Visitor<Any?>, Statement.Visitor<Unit> {
         }
 
     /** Executes [statement]. */
-    fun execute(statement: Statement): Any = statement.accept(this)
+    fun execute(statement: Statement) = statement.accept(this)
 
     /** Evaluates [expr] and returns its value. */
     fun eval(expr: Expression): Any? = expr.accept(this)
@@ -97,65 +96,49 @@ object Interpreter : Expression.Visitor<Any?>, Statement.Visitor<Unit> {
             else -> throw RuntimeError(operator, "Can't compare '$left' with '$right'")
         }
 
-    /// Expression visitors
-
-    override fun visitAssignExpression(expression: Expression.Assign): Any? {
-        val value = eval(expression.value)
-        env.assignVar(expression.name, value)
-        return value
-    }
-
-    override fun visitBinaryExpression(expression: Expression.Binary): Any {
-        val (left, right) = eval(expression.left) to eval(expression.right)
-        return when (val type = expression.operator.type) {
-            TokenType.PLUS -> sum(left, right, expression.operator)
-            TokenType.MINUS -> sub(left, right, expression.operator)
-            TokenType.SLASH -> div(left, right, expression.operator)
-            TokenType.STAR -> mult(left, right, expression.operator)
-            TokenType.EQUAL_EQUAL -> left == right
-            TokenType.BANG_EQUAL -> left != right
-            else ->
-                cmp(
-                    left,
-                    right,
-                    type,
-                    expression.operator
-                ) // GREATER, GREATER_EQUAL, LESS, LESS_EQUAL
+    /** Visit Expression. Returns the evaluated value. */
+    override fun visit(expression: Expression): Any? =
+        when (expression) {
+            is Expression.Assign -> {
+                val value = eval(expression.value)
+                env.assignVar(expression.name, value)
+                value
+            }
+            is Expression.Binary -> {
+                val (left, right) = eval(expression.left) to eval(expression.right)
+                when (val type = expression.operator.type) {
+                    TokenType.PLUS -> sum(left, right, expression.operator)
+                    TokenType.MINUS -> sub(left, right, expression.operator)
+                    TokenType.SLASH -> div(left, right, expression.operator)
+                    TokenType.STAR -> mult(left, right, expression.operator)
+                    TokenType.EQUAL_EQUAL -> left == right
+                    TokenType.BANG_EQUAL -> left != right
+                    else -> cmp(left, right, type, expression.operator) // >, >=, <, <=
+                }
+            }
+            is Expression.Grouping -> eval(expression.expr)
+            is Expression.Literal -> expression.value
+            is Expression.Unary -> {
+                val right = eval(expression.right)
+                when (expression.operator.type) {
+                    TokenType.MINUS -> getOppositeNumber(right, expression.operator)
+                    TokenType.BANG -> !isTruthy(right)
+                    else -> null // Unreachable(!?)
+                }
+            }
+            is Expression.Variable -> env.getVar(expression.name)
         }
-    }
 
-    override fun visitGroupingExpression(expression: Expression.Grouping) = eval(expression.expr)
-
-    override fun visitLiteralExpression(expression: Expression.Literal) = expression.value
-
-    override fun visitUnaryExpression(expression: Expression.Unary): Any? {
-        val right = eval(expression.right)
-        return when (expression.operator.type) {
-            TokenType.MINUS -> getOppositeNumber(right, expression.operator)
-            TokenType.BANG -> !isTruthy(right)
-            else -> null // Unreachable(!?)
+    /** Visit Statement. Does not return anything because statements don't produce a value. */
+    override fun visit(statement: Statement) {
+        when (statement) {
+            is Statement.Block -> executeBlock(statement.statements, Environment(env))
+            is Statement.Expr -> println(eval(statement.expr)) // TODO: print only if we are on REPL
+            is Statement.Print -> println(eval(statement.expr))
+            is Statement.Variable -> {
+                val value = statement.value?.let { eval(it) }
+                env.createVar(statement.name, value)
+            }
         }
-    }
-
-    override fun visitVariableExpression(expression: Expression.Variable) =
-        env.getVar(expression.name)
-
-    /// Statement visitors
-
-    override fun visitBlockStatement(statement: Statement.Block) {
-        executeBlock(statement.statements, Environment(env))
-    }
-
-    override fun visitExprStatement(statement: Statement.Expr) {
-        println(eval(statement.expr))
-    }
-
-    override fun visitPrintStatement(statement: Statement.Print) {
-        println(eval(statement.expr))
-    }
-
-    override fun visitVariableStatement(statement: Statement.Variable) {
-        val value = statement.value?.let { eval(it) }
-        env.createVar(statement.name, value)
     }
 }

@@ -3,7 +3,6 @@
  * list of tokens.
  */
 class Tokenizer(private val source: String) {
-
     /** token list */
     var tokens = mutableListOf<Token>()
 
