@@ -1,37 +1,39 @@
-/** Used to debug our AST (Abstract Syntax Tree). */
-object AstPrinter : Expression.Visitor<String> {
+/**
+ * Used to debug our AST (Abstract Syntax Tree). At the moment it can only debug single line
+ * expressions.
+ */
+object AstPrinter : ExpressionVisitor<String> {
+    /** String builder to build the AST debug message. */
+    private val sb = StringBuilder()
 
-    /** Prints the AST as debug message. */
-    fun debug(expr: Expression) = println("AST: " + expr.accept(this))
+    init {
+        // Since [AstPrinter] is singleton, in order to reset the previous usage
+        // we clear the string builder
+        sb.clear()
+    }
 
-    /** "Parenthesizes" [expressions] into a string and returns it. */
-    private fun parenthesize(name: String?, vararg expressions: Expression): String {
-        val builder = StringBuilder().append("(").append(name)
+    /** Returns the AST as debug message. */
+    fun debug(expr: Expression) = expr.accept(this)
+
+    /** Returns the expression string as debug format. */
+    override fun visit(expression: Expression) =
+        when (expression) {
+            is Expression.Assign ->
+                parenthesize("variable assign '${expression.name.lexeme}'", expression.value)
+            is Expression.Binary ->
+                parenthesize(expression.operator.lexeme, expression.left, expression.right)
+            is Expression.Grouping -> parenthesize("group", expression.expr)
+            is Expression.Literal -> expression.value?.toString() ?: "nil"
+            is Expression.Unary -> parenthesize(expression.operator.lexeme, expression.right)
+            is Expression.Variable -> parenthesize("variable access '${expression.name.lexeme}'")
+        }
+
+    /** "Parenthesizes" aKa builds a debug message with all the [expressions]. */
+    private fun parenthesize(prefix: String?, vararg expressions: Expression): String {
+        val builder = StringBuilder().append("(").append(prefix)
         for (expr in expressions) {
             builder.append(" ${expr.accept(this)}")
         }
         return builder.append(")").toString()
-    }
-
-    override fun visitBinaryExpression(expression: Expression.Binary) =
-        parenthesize(expression.operator.lexeme, expression.left, expression.right)
-
-    override fun visitGroupingExpression(expression: Expression.Grouping) =
-        parenthesize("group", expression.expr)
-
-    override fun visitLiteralExpression(expression: Expression.Literal): String {
-        val v = expression.value ?: return "nil"
-        return v.toString()
-    }
-
-    override fun visitUnaryExpression(expression: Expression.Unary) =
-        parenthesize(expression.operator.lexeme, expression.right)
-
-    override fun visitVariableExpression(expression: Expression.Variable): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun visitAssignExpression(expression: Expression.Assign): String {
-        TODO("Not yet implemented")
     }
 }
