@@ -2,6 +2,11 @@ import kotlin.test.*
 
 /** Implements unit tests for [Interpreter]. */
 class InterpreterTest {
+
+    // TODO: test statements and their output...
+
+    /// Expressions evaluation tests
+
     @Test
     fun `test eval math #1`() {
         val tokens = Tokenizer("1+2").scanTokens()
@@ -74,13 +79,14 @@ class InterpreterTest {
 
     @Test
     fun `test eval valid comparisons with numbers (greater, greater or equal, less, less or equal)`() {
-        val tests = listOf(
-            "1 > 2" to false,
-            "1 >= 2" to false,
-            "1 < 2" to true,
-            "1 <= 2" to true,
-            "1 <= \"a\"" to null,
-        )
+        val tests =
+            listOf(
+                "1 > 2" to false,
+                "1 >= 2" to false,
+                "1 < 2" to true,
+                "1 <= 2" to true,
+                "1 <= \"a\"" to null,
+            )
         tests.forEach { (test, expected) ->
             val tokens = Tokenizer(test).scanTokens()
             val ast = Parser(tokens).parseExpr()!!
@@ -90,14 +96,15 @@ class InterpreterTest {
 
     @Test
     fun `test eval boolean expressions with numbers (equal, not equal)`() {
-        val tests = listOf(
-            "1 == 2" to false,
-            "1 != 2" to true,
-            "1 == 1" to true,
-            "1 != 1" to false,
-            "1 == \"a\"" to false,
-            "1 != \"a\"" to true
-        )
+        val tests =
+            listOf(
+                "1 == 2" to false,
+                "1 != 2" to true,
+                "1 == 1" to true,
+                "1 != 1" to false,
+                "1 == \"a\"" to false,
+                "1 != \"a\"" to true
+            )
         tests.forEach { (test, expected) ->
             val tokens = Tokenizer(test).scanTokens()
             val ast = Parser(tokens).parseExpr()!!
@@ -107,13 +114,14 @@ class InterpreterTest {
 
     @Test
     fun `test eval boolean expressions with strings (equal, not equal)`() {
-        val tests = listOf(
-            "\"abc\" != \"abc\"" to false,
-            "\"abc\" == \"abc\"" to true,
-            "\"abc\" != \"a\"" to true,
-            "\"abc\" == \"a\"" to false,
-            "\"abc\" == 1" to false
-        )
+        val tests =
+            listOf(
+                "\"abc\" != \"abc\"" to false,
+                "\"abc\" == \"abc\"" to true,
+                "\"abc\" != \"a\"" to true,
+                "\"abc\" == \"a\"" to false,
+                "\"abc\" == 1" to false
+            )
         tests.forEach { (test, expected) ->
             val tokens = Tokenizer(test).scanTokens()
             val ast = Parser(tokens).parseExpr()!!
@@ -148,5 +156,4 @@ class InterpreterTest {
         val ast = Parser(tokens).parseExpr()!!
         assert(Interpreter.eval(ast) == null)
     }
-
 }
