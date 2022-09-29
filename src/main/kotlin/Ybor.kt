@@ -1,9 +1,7 @@
 import java.io.File
 import kotlin.system.exitProcess
 
-/**
- * Main functions to make the interpreter run code or debug/display errors.
- */
+/** Main functions to make the interpreter run code or debug/display errors. */
 object Ybor {
     /** True if there was an error reported (by the lexer/parser) */
     private var err = false
@@ -16,8 +14,7 @@ object Ybor {
         val tokens = Tokenizer(source).scanTokens()
         val ast = Parser(tokens).parseStatements()
 
-        if (err)
-            return
+        if (err) return
 
         Interpreter.interpret(ast)
     }
@@ -26,8 +23,7 @@ object Ybor {
     fun execFile(filename: String) {
         val src = File(filename).readText()
         exec(src)
-        if (err)
-            exitProcess(1337) // TODO: different status code for syntax/runtime error
+        if (err) exitProcess(1337) // TODO: different status code for syntax/runtime error
     }
 
     /** Runs a prompt where custom commands can be executed (aKa REPL: read–eval–print-loop). */
@@ -38,7 +34,8 @@ object Ybor {
             if (input.isEmpty() || input == "exit") break
             exec(input)
             err = false
-            // runtimeErr = false // I suppose the REPL does not care about runtime errors since its single expressions(?)
+            // runtimeErr = false // I suppose the REPL does not care about runtime errors since its
+            // single expressions(?)
         }
     }
 

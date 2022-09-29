@@ -8,15 +8,16 @@ object AstPrinter : Expression.Visitor<String> {
     private fun parenthesize(name: String?, vararg expressions: Expression): String {
         val builder = StringBuilder().append("(").append(name)
         for (expr in expressions) {
-            builder.append(" ${expr.accept(this)}");
+            builder.append(" ${expr.accept(this)}")
         }
-        return builder.append(")").toString();
+        return builder.append(")").toString()
     }
 
     override fun visitBinaryExpression(expression: Expression.Binary) =
         parenthesize(expression.operator.lexeme, expression.left, expression.right)
 
-    override fun visitGroupingExpression(expression: Expression.Grouping) = parenthesize("group", expression.expr)
+    override fun visitGroupingExpression(expression: Expression.Grouping) =
+        parenthesize("group", expression.expr)
 
     override fun visitLiteralExpression(expression: Expression.Literal): String {
         val v = expression.value ?: return "nil"

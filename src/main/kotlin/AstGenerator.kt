@@ -1,5 +1,4 @@
 import java.io.PrintWriter
-import java.util.*
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -10,7 +9,9 @@ fun main(args: Array<String>) {
     val outputDir = args[0]
 
     AstGenerator.defineAst(
-        outputDir, "Expression", listOf(
+        outputDir,
+        "Expression",
+        listOf(
             "Assign     : Token name, Expression value",
             "Binary     : Expression left, Token operator, Expression right",
             "Grouping   : Expression expr",
@@ -21,7 +22,10 @@ fun main(args: Array<String>) {
     )
 
     AstGenerator.defineAst(
-        outputDir, "Statement", listOf(
+        outputDir,
+        "Statement",
+        listOf(
+            "Block       : List<Statement> statements",
             "Expr        : Expression expr",
             "Print       : Expression expr",
             "Variable    : Token name, Expression? value"
@@ -29,7 +33,10 @@ fun main(args: Array<String>) {
     )
 }
 
-/** Implements functions to quickly generate our Expression.kt file, which describes all the possible grammar classes. */
+/**
+ * Implements functions to quickly generate our Expression.kt file, which describes all the possible
+ * grammar classes.
+ */
 object AstGenerator {
 
     /** Defines Expression abstract class and its "children" types. */
@@ -65,7 +72,12 @@ object AstGenerator {
     }
 
     /** Defines type data class. */
-    private fun defineType(writer: PrintWriter, baseName: String, className: String, fieldList: String) {
+    private fun defineType(
+        writer: PrintWriter,
+        baseName: String,
+        className: String,
+        fieldList: String
+    ) {
         writer.print("\tdata class $className(")
 
         val fields = fieldList.split(", ")
@@ -77,7 +89,9 @@ object AstGenerator {
         }
 
         writer.println("): $baseName() {")
-        writer.println("\t\toverride fun <T> accept(visitor: Visitor<T>) = visitor.visit$className$baseName(this)")
+        writer.println(
+            "\t\toverride fun <T> accept(visitor: Visitor<T>) = visitor.visit$className$baseName(this)"
+        )
         writer.println("\t}")
         writer.println()
     }

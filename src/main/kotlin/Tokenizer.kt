@@ -1,6 +1,6 @@
 /**
- * Tokenizer class (also known as a Lexer).
- * Implement functions to transform our [source] into a list of tokens.
+ * Tokenizer class (also known as a Lexer). Implement functions to transform our [source] into a
+ * list of tokens.
  */
 class Tokenizer(private val source: String) {
 
@@ -17,23 +17,24 @@ class Tokenizer(private val source: String) {
     private var current = 0
 
     /** reserved keywords */
-    private var keywords = hashMapOf<String, TokenType>(
-        "if" to TokenType.IF,
-        "else" to TokenType.ELSE,
-        "elif" to TokenType.ELIF,
-        "and" to TokenType.AND,
-        "or" to TokenType.OR,
-        "false" to TokenType.FALSE,
-        "true" to TokenType.TRUE,
-        "for" to TokenType.FOR,
-        "while" to TokenType.WHILE,
-        "fun" to TokenType.FUN,
-        "nil" to TokenType.NIL,
-        "return" to TokenType.RETURN,
-        "var" to TokenType.VAR,
-        "this" to TokenType.THIS,
-        "print" to TokenType.PRINT,
-    )
+    private var keywords =
+        hashMapOf<String, TokenType>(
+            "if" to TokenType.IF,
+            "else" to TokenType.ELSE,
+            "elif" to TokenType.ELIF,
+            "and" to TokenType.AND,
+            "or" to TokenType.OR,
+            "false" to TokenType.FALSE,
+            "true" to TokenType.TRUE,
+            "for" to TokenType.FOR,
+            "while" to TokenType.WHILE,
+            "fun" to TokenType.FUN,
+            "nil" to TokenType.NIL,
+            "return" to TokenType.RETURN,
+            "var" to TokenType.VAR,
+            "this" to TokenType.THIS,
+            "print" to TokenType.PRINT,
+        )
 
     /** Reads source input and scan for tokens. */
     fun scanTokens(): List<Token> {
@@ -47,40 +48,41 @@ class Tokenizer(private val source: String) {
     }
 
     /**
-     * Tries to scan a token depending on the current input.
-     * In case it finds a valid input, it adds the token to the list.
+     * Tries to scan a token depending on the current input. In case it finds a valid input, it adds
+     * the token to the list.
      */
     private fun scanToken() {
         val c = advance()
 
         // "simple" cases
-        val tokenToAdd = when (c) {
-            '(' -> TokenType.LEFT_PAREN
-            ')' -> TokenType.RIGHT_PAREN
-            '{' -> TokenType.LEFT_BRACE
-            '}' -> TokenType.RIGHT_BRACE
-            ',' -> TokenType.COMMA
-            '.' -> TokenType.DOT
-            '-' -> TokenType.MINUS
-            '+' -> TokenType.PLUS
-            ';' -> TokenType.SEMICOLON
-            '*' -> TokenType.STAR
-            '!' -> if (match('=')) TokenType.BANG_EQUAL else TokenType.BANG
-            '=' -> if (match('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL
-            '<' -> if (match('=')) TokenType.LESS_EQUAL else TokenType.LESS
-            '>' -> if (match('=')) TokenType.GREATER_EQUAL else TokenType.GREATER
-            '/' -> {
-                if (match('/')) {
-                    while (!endOfFile() && peek() != '\n') {
-                        advance()
+        val tokenToAdd =
+            when (c) {
+                '(' -> TokenType.LEFT_PAREN
+                ')' -> TokenType.RIGHT_PAREN
+                '{' -> TokenType.LEFT_BRACE
+                '}' -> TokenType.RIGHT_BRACE
+                ',' -> TokenType.COMMA
+                '.' -> TokenType.DOT
+                '-' -> TokenType.MINUS
+                '+' -> TokenType.PLUS
+                ';' -> TokenType.SEMICOLON
+                '*' -> TokenType.STAR
+                '!' -> if (match('=')) TokenType.BANG_EQUAL else TokenType.BANG
+                '=' -> if (match('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL
+                '<' -> if (match('=')) TokenType.LESS_EQUAL else TokenType.LESS
+                '>' -> if (match('=')) TokenType.GREATER_EQUAL else TokenType.GREATER
+                '/' -> {
+                    if (match('/')) {
+                        while (!endOfFile() && peek() != '\n') {
+                            advance()
+                        }
+                        TokenType.COMMENT
+                    } else {
+                        TokenType.SLASH
                     }
-                    TokenType.COMMENT
-                } else {
-                    TokenType.SLASH
                 }
+                else -> null
             }
-            else -> null
-        }
 
         if (tokenToAdd != null) {
             addToken(tokenToAdd)
@@ -89,7 +91,9 @@ class Tokenizer(private val source: String) {
 
         // "complex/different" cases
         when (c) {
-            ' ', '\r', '\t' -> {}//ignore
+            ' ',
+            '\r',
+            '\t' -> {} // ignore
             '\n' -> line++
             '"' -> getStringToken()
             else -> {
@@ -168,11 +172,9 @@ class Tokenizer(private val source: String) {
     /** Returns character at [current] + [offset] position. */
     private fun peek(offset: Int = 0): Char {
         val n = current + offset
-        return if (n >= source.length) 0.toChar()
-        else source[n]
+        return if (n >= source.length) 0.toChar() else source[n]
     }
 
     /** Returns true if [this] is a letter or a number. */
     private fun Char.isAlphaNumeric() = this.isLetter() || this.isDigit() || this == '_'
-
 }
